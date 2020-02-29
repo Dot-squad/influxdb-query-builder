@@ -7,10 +7,10 @@ import {QueryStatusError} from "./exceptions/QueryStatusError";
  */
 class InfluxQueryBuilder {
     private status: QueryStatus = QueryStatus.EMPTY;
-    query: string;
+    private _query: string;
 
     constructor(query: string, status?: QueryStatus) {
-        this.query = query;
+        this._query = query;
         this.status = status ? status : QueryStatus.EMPTY;
     }
 
@@ -20,18 +20,18 @@ class InfluxQueryBuilder {
      */
     from(measure: string): InfluxQueryBuilder {
         this.checkIfStatusIs(QueryStatus.SELECT);
-        this.query += ` FROM ${measure}`;
+        this._query += ` FROM ${measure}`;
         this.status = QueryStatus.FROM;
         return this;
     }
 
     fromQuery(query: InfluxQueryBuilder): InfluxQueryBuilder {
-        return this.from(`(${query.query})`)
+        return this.from(`(${query._query})`)
     }
 
     whereTime(condition: Condition | string): InfluxQueryBuilder {
         this.checkIfStatusIs(QueryStatus.FROM);
-        this.query += ` WHERE time ${condition.toString()}`;
+        this._query += ` WHERE time ${condition.toString()}`;
         this.status = QueryStatus.WHERE;
         return this;
     }
@@ -40,6 +40,10 @@ class InfluxQueryBuilder {
         if (expectedStatus != this.status) {
             throw new QueryStatusError(this.status, QueryStatus.SELECT)
         }
+    }
+
+    query(): string {
+        return this._query;
     }
 
     isValid(): boolean {
