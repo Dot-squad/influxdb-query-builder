@@ -29,9 +29,9 @@ class InfluxQueryBuilder {
         return this.from(`(${query._query})`)
     }
 
-    whereTime(condition: Condition | string): InfluxQueryBuilder {
+    where(condition: Condition | string): InfluxQueryBuilder {
         this.checkIfStatusIs(QueryStatus.FROM);
-        this._query += ` WHERE time ${condition.toString()}`;
+        this._query += ` WHERE ${condition.toString()}`;
         this.status = QueryStatus.WHERE;
         return this;
     }
