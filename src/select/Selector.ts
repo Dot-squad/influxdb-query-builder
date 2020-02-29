@@ -1,7 +1,7 @@
-class Selector {
+export class Selector {
     selector: string;
 
-    protected constructor(selector: string) {
+    constructor(selector: string) {
         this.selector = selector;
     }
 
@@ -10,23 +10,14 @@ class Selector {
     }
 }
 
-class Field extends Selector{
-
-    protected constructor(selector: string) {
-        super(selector);
-    }
-
-    static all(): Field {
-        return new Field("*");
-    }
-
-    static field(fieldName: string): Field {
-        return new Field(fieldName);
-    }
+export function field(fieldName: string): Selector {
+    return new Selector(`"${fieldName}"`);
 }
 
-class Aggregator extends Selector {
-    static sumOn(field: Field) {
-        return new Selector(`SUM(${field.toString()})`)
-    }
+export function fields(fieldNames: string[]): Selector {
+    return new Selector(fieldNames.map(fieldName => `"${fieldName}"`).join(','))
+}
+
+export function all(): Selector {
+    return new Selector("*");
 }

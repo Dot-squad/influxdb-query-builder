@@ -1,15 +1,14 @@
+import {Selector} from "./select/Selector";
+import {Condition} from "./Condition";
+
 class InfluxQueryBuilder {
     query: string;
 
-    private constructor(query: string) {
+    constructor(query: string) {
         this.query = query;
     }
 
-    static select(selector: Selector): InfluxQueryBuilder {
-        return new InfluxQueryBuilder(`SELECT ${selector.toString()}`);
-    }
-
-    from(measure: Measure): InfluxQueryBuilder {
+    from(measure: string): InfluxQueryBuilder {
         this.query += ` FROM ${measure}`;
         return this;
     }
@@ -19,4 +18,8 @@ class InfluxQueryBuilder {
         return this;
     }
 
+}
+
+export function select(selector: Selector | string): InfluxQueryBuilder {
+    return new InfluxQueryBuilder(`SELECT ${selector.toString()}`);
 }
