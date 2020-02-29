@@ -1,0 +1,9 @@
+{
+  "name": "@dot-squad/influxdb-query-builder",
+  "version": "1.0.0",
+  "description": "Query builder for InfluxDB queries implemented in TypeScript",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "author": "Adrian Healey",
+  "license": "ISC"
+}
