@@ -1,0 +1,22 @@
+{
+  "name": "@dot-squad/influxdb-query-builder",
+  "version": "1.0.0",
+  "description": "Query builder for InfluxDB queries implemented in TypeScript",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "mocha -r ts-node/register tests/**/*.test.ts"
+  },
+  "author": "Adrian Healey",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/chai": "^4.2.9",
+    "@types/mocha": "^7.0.1",
+    "chai": "^4.2.0",
+    "mocha": "^7.1.0",
+    "ts-node": "^8.6.2"
+  },
+  "dependencies": {
+    "typescript": "^3.8.3"
+  }
+}
