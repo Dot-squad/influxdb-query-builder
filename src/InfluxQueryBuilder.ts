@@ -1,6 +1,8 @@
 import {Selector} from "./Selector";
 import {Condition} from "./Condition";
 import {QueryStatusError} from "./exceptions/QueryStatusError";
+import {DurationUnit} from "./time/DurationUnit";
+import {FillingMode} from "./time/FillingMode";
 
 /**
  * Builder for InfluxDB queries
@@ -25,8 +27,9 @@ class InfluxQueryBuilder {
         return this;
     }
 
-    fromQuery(query: InfluxQueryBuilder): InfluxQueryBuilder {
-        return this.from(`(${query._query})`)
+    fromQuery(...queries: InfluxQueryBuilder[]): InfluxQueryBuilder {
+        const chainedClauses = queries.map(query => `(${query.query()})`).join(',');
+        return this.from(chainedClauses);
     }
 
     where(condition: Condition | string): InfluxQueryBuilder {
@@ -36,8 +39,21 @@ class InfluxQueryBuilder {
         return this;
     }
 
-    private checkIfStatusIs(expectedStatus: QueryStatus): void {
-        if (expectedStatus != this.status) {
+    groupByPeriodsOf(duration: number, unit: DurationUnit): InfluxQueryBuilder {
+        this.checkIfStatusIs(QueryStatus.FROM, QueryStatus.WHERE);
+        this._query += ` GROUP BY ${duration}${unit}`;
+        this.status = QueryStatus.GROUP;
+        return this;
+    }
+
+    fill(filling: FillingMode): InfluxQueryBuilder {
+        this.checkIfStatusIs(QueryStatus.GROUP);
+        this._query += ` fill(${filling.toString()})`;
+        return this;
+    }
+
+    private checkIfStatusIs(...expectedStatus: QueryStatus[]): void {
+        if (expectedStatus.indexOf(this.status) == -1) {
             throw new QueryStatusError(this.status, QueryStatus.SELECT)
         }
     }
@@ -54,10 +70,11 @@ class InfluxQueryBuilder {
 /**
  * Starting point of the query building. It initialize a new query builder with the proper
  * SELECT clause
- * @param selector: content of the SELECT clause
+ * @param selectors: content of the SELECT clause
  */
-export function select(selector: Selector): InfluxQueryBuilder {
-    return new InfluxQueryBuilder(`SELECT ${selector.toString()}`, QueryStatus.SELECT);
+export function select(...selectors: Selector[]): InfluxQueryBuilder {
+    const content: string = selectors.map(selector => selector.toString()).join(',');
+    return new InfluxQueryBuilder(`SELECT ${content}`, QueryStatus.SELECT);
 }
 
 /**
@@ -68,4 +85,5 @@ export enum QueryStatus{
     SELECT = 1,
     FROM = 2,
     WHERE = 3,
+    GROUP = 4
 }

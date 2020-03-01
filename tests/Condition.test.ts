@@ -21,7 +21,7 @@ describe("Temporal conditions", function() {
 
     it('timestamp less than', function () {
         const firstJan = new Date(Date.UTC(2020, 0, 1));
-        const condition = timestamp().isBeforeThan(firstJan).toString().toLowerCase();
+        const condition = timestamp().isBefore(firstJan).toString().toLowerCase();
         expect(condition).is.a('string');
         expect(condition).to.have.string('time < 1577836800000ms',);
     });

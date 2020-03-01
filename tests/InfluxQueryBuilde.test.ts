@@ -1,6 +1,9 @@
 import {expect} from 'chai';
 import {select} from "../src/InfluxQueryBuilder";
 import {all, field, fields, sumOn} from "../src/Selector";
+import {fieldValueOf, timestamp} from "../src/Condition";
+import {DurationUnit} from "../src/time/DurationUnit";
+import {withNone} from "../src/time/FillingMode";
 
 
 describe("Simple queries", function() {
@@ -54,4 +57,36 @@ describe("Aggregation queries", function() {
         expect(sumAsSalamis).to.be.a('string');
         expect(sumAsSalamis).to.equals('SELECT SUM("salami") AS "salamis" FROM sandwich');
     });
+});
+
+describe("Complexe queries", function() {
+    const firstJan = new Date(Date.UTC(2020, 0, 1));
+    const complexQuery = select(
+        sumOn(field('water')).as("water"),
+        sumOn(field('fire')).as("fire")
+    ).fromQuery(
+        select(sumOn(field('temperature')).as('temp'))
+            .from('consumption')
+            .where(
+                timestamp().isWhileOrAfter(firstJan).minus(4, DurationUnit.WEEK)
+                    .and(fieldValueOf('sensor').is('ALPHA1'))
+                    .and(fieldValueOf('type').is('thermic'))
+                    .and(fieldValueOf('provider').is('Belg'))),
+        select(sumOn(field('level')).as('level'))
+            .from('consumptions')
+            .where(
+                timestamp().isWhileOrAfter(firstJan).minus(4, DurationUnit.WEEK)
+                    .and(fieldValueOf('sensor').is('ALPHA1'))
+                    .and(fieldValueOf('type').is('aquatic'))
+                    .and(fieldValueOf('provider').is('Belg')))
+            .groupByPeriodsOf(30, DurationUnit.MINUTE).fill(withNone())
+    ).query();
+    const expectedQuery = 'SELECT SUM("water") AS "water",SUM("fire") AS "fire" FROM ' +
+        '(SELECT SUM("temperature") AS "temp" FROM consumptions ' +
+        'WHERE time >= (1577836800000ms - 4week) AND "sensor" = \'ALPHA1\' AND "type" = \'aquatic\' AND "provider" = \'Belg\'),' +
+        '(SELECT SUM("level") AS "level" FROM consumptions ' +
+        'WHERE time >= (1577836800000ms - 4week) AND "sensor" = \'ALPHA1\' AND "type" = \'aquatic\' AND "provider" = \'Belg\')' +
+        'GROUP BY time(30m) fill(none)`';
+    expect(complexQuery).is.a("string");
+    expect(complexQuery).is.string(expectedQuery);
 });
