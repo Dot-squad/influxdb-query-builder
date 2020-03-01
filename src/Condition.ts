@@ -1,3 +1,6 @@
+/**
+ * Represents a condition inside the WHERE clause
+ */
 export class Condition {
     private condition: string;
 
@@ -5,18 +8,33 @@ export class Condition {
         this.condition = condition;
     }
 
-    lessThan(value: number): Condition{
+    isBeforeThan(date: Date): Condition {
+        this.condition += ` < ${date.getTime()}ms`;
+        return this;
+    }
+
+    isEquals(value: number): Condition {
+        this.condition += ` = ${value}`;
+        return this;
+    }
+
+    isLessThan(value: number): Condition{
         this.condition += ` < ${value}`;
         return this;
     }
 
-    get(): string {
+    isLessOrEqualThan(value: number): Condition{
+        this.condition += ` <= ${value}`;
+        return this;
+    }
+
+    toString(): string {
         return this.condition;
     }
 }
 
-export function timestampIs(condition: Condition) {
-    return new Condition(`time${condition.get()}`);
+export function timestamp() {
+    return new Condition('time');
 }
 
 export function timestampIsBetween(start: Date, end: Date): Condition {
